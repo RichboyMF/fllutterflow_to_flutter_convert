@@ -1,5 +1,6 @@
 // lib/presentation/widgets/new_list_bottom_sheet.dart
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class NewListBottomSheet extends StatefulWidget {
   const NewListBottomSheet({super.key});
@@ -13,10 +14,8 @@ class _NewListBottomSheetState extends State<NewListBottomSheet> {
   String? _selectedStyle;
   String? _selectedItem;
 
-  // Keep tab options minimal
   final List<String> _styleOptions = ['Color', 'Photo', 'Custom'];
-
-  // Extended color options to demonstrate scrolling
+  List<String> _customImages = []; // This will store image paths later
   final List<Color> _colorOptions = [
     const Color(0xFF4b39ef), // primary
     const Color(0xFF39d2c0), // secondary
@@ -34,21 +33,215 @@ class _NewListBottomSheetState extends State<NewListBottomSheet> {
     Colors.cyan,
     Colors.teal,
     Colors.green,
-    Colors.lightGreen,
-    Colors.lime,
-    Colors.yellow,
-    Colors.amber,
-    Colors.orange,
-    Colors.deepOrange,
-    Colors.brown,
-    Colors.grey,
-    Colors.blueGrey,
+  ];
+
+  // Placeholder icons for photo selection
+  final List<IconData> _photoOptions = [
+    Icons.landscape,
+    Icons.beach_access,
+    Icons.park,
+    Icons.nature,
+    Icons.motorcycle,
+    Icons.sports_basketball,
+    Icons.pets,
+    Icons.music_note,
+    Icons.restaurant,
+    Icons.local_cafe,
+    Icons.flight,
+    Icons.shopping_bag,
+    Icons.weekend,
+    Icons.school,
+    Icons.sports_esports,
+    Icons.outdoor_grill,
   ];
 
   @override
   void dispose() {
     _textController.dispose();
     super.dispose();
+  }
+
+  Widget _buildSelectionArea() {
+    switch (_selectedStyle) {
+      case 'Color':
+        return _buildColorSelection();
+      case 'Photo':
+        return _buildPhotoSelection();
+      case 'Custom':
+        return _buildCustomSelection();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildColorSelection() {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        scrollDirection: Axis.horizontal,
+        itemCount: _colorOptions.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedItem = 'color_$index';
+                });
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _colorOptions[index],
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _selectedItem == 'color_$index'
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: _selectedItem == 'color_$index'
+                    ? Icon(
+                        Icons.check,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        size: 20,
+                      )
+                    : null,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPhotoSelection() {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        scrollDirection: Axis.horizontal,
+        itemCount: _photoOptions.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedItem = 'photo_$index';
+                });
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _selectedItem == 'photo_$index'
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: Icon(
+                  _photoOptions[index],
+                  color: _selectedItem == 'photo_$index'
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                  size: 20,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+// Add this new method
+  Widget _buildCustomSelection() {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        scrollDirection: Axis.horizontal,
+        // Add 1 to include the "Add" button
+        itemCount: _customImages.length + 1,
+        itemBuilder: (context, index) {
+          // If it's the last item, show the add button
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: InkWell(
+                onTap: () {
+                  // TODO: Implement image picker
+                  print('Add custom image');
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                      width: 1,
+                      style: BorderStyle.solid,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.add,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 24,
+                  ),
+                ),
+              ),
+            );
+          }
+
+          // Adjust index to account for the add button
+          final imageIndex = index - 1;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedItem = 'custom_$imageIndex';
+                });
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _selectedItem == 'custom_$imageIndex'
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: ClipOval(
+                  child: Container(
+                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    child: Icon(
+                      Icons.image,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -103,7 +296,7 @@ class _NewListBottomSheetState extends State<NewListBottomSheet> {
               ),
             ),
 
-            // Static Style Tabs
+            // Style Selection Tabs
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -123,8 +316,7 @@ class _NewListBottomSheetState extends State<NewListBottomSheet> {
                             onSelected: (selected) {
                               setState(() {
                                 _selectedStyle = selected ? style : null;
-                                _selectedItem =
-                                    null; // Reset selection when changing styles
+                                _selectedItem = null;
                               });
                             },
                             backgroundColor:
@@ -137,54 +329,8 @@ class _NewListBottomSheetState extends State<NewListBottomSheet> {
               ),
             ),
 
-            // Scrollable Selection Area
-            // Scrollable Selection Area
-            if (_selectedStyle == 'Color')
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: SizedBox(
-                  height: 50, // Height for a single row
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _colorOptions.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12.0),
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedItem = index.toString();
-                            });
-                          },
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: _colorOptions[index],
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: _selectedItem == index.toString()
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Colors.transparent,
-                                width: 2,
-                              ),
-                            ),
-                            child: _selectedItem == index.toString()
-                                ? Icon(
-                                    Icons.check,
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                    size: 20,
-                                  )
-                                : null,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+            // Selection Area
+            _buildSelectionArea(),
 
             // Action Buttons
             Padding(

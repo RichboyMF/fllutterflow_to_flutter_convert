@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import '../../utils/screen_utils.dart';
 import '../widgets/new_list_bottom_sheet.dart';
+import '../widgets/add_section_item.dart';
+import '../widgets/create_group_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +19,32 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isDarkMode = !isDarkMode;
     });
+  }
+
+  void _showAddSection() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => AddSectionItem(
+        onAddPressed: () {
+          Navigator.pop(context);
+          context.showNewListSheet();
+        },
+        onTaskPressed: () {
+          Navigator.pop(context);
+          context.showCreateGroup(
+            onCreateGroup: (name) {
+              context.showSnackBar('Created group: $name');
+            },
+          );
+        },
+      ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(16),
+        ),
+      ),
+    );
   }
 
   @override
@@ -45,16 +73,32 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildTestButton(
                 context,
                 'New List Bottom Sheet',
-                () => showNewListBottomSheet(context),
+                () => context.showNewListSheet().then((result) {
+                  if (result != null) {
+                    context.showSnackBar('Created list with data: $result');
+                  }
+                }),
+              ),
+              _buildTestButton(
+                context,
+                'Add Section Item',
+                _showAddSection,
+              ),
+              _buildTestButton(
+                context,
+                'Create Group',
+                () => context.showCreateGroup(
+                  onCreateGroup: (name) {
+                    context.showSnackBar('Created group: $name');
+                  },
+                ),
               ),
             ],
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.showSnackBar('FAB Pressed!');
-        },
+        onPressed: () => _showAddSection(),
         child: const Icon(Icons.add),
       ),
     );

@@ -1,5 +1,6 @@
 // lib/presentation/widgets/new_list_bottom_sheet.dart
 import 'package:flutter/material.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'dart:io';
 
 class NewListBottomSheet extends StatefulWidget {
@@ -371,12 +372,29 @@ class _NewListBottomSheetState extends State<NewListBottomSheet> {
 }
 
 // Show bottom sheet function
-void showNewListBottomSheet(BuildContext context) {
-  showModalBottomSheet(
+Future<T?> showNewListBottomSheet<T>(BuildContext context) {
+  return showMaterialModalBottomSheet<T>(
     context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => const NewListBottomSheet(),
+    builder: (context) => SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      child: NewListBottomSheet(),
+    ),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(16),
+      ),
+    ),
+    clipBehavior: Clip.antiAliasWithSaveLayer,
+    enableDrag: true,
+    isDismissible: true,
+    duration: const Duration(milliseconds: 300),
   );
+}
+
+// Add this extension for more natural usage
+extension BottomSheetExtension on BuildContext {
+  Future<T?> showNewListSheet<T>() {
+    return showNewListBottomSheet(this);
+  }
 }
